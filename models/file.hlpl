@@ -1,0 +1,38 @@
+import numpy
+import elytica
+import functions
+import xlrd
+
+model diet_problem
+set F = loadFoods();
+const c = loadCosts(), forall f in F;
+var 0<=x<=100, forall f in F;
+minimize sum_{f in F}{x_{f} * c_{f}};
+end
+
+
+
+def readSets(filename, sheetname):
+  wb = xlrd.open_workbook(filename)
+  ws = wb.sheet_by_name(sheetname)
+  name = ws.cell_value(0,0)
+  cost = ws.cell_value(1,0)
+  energy = ws.cell_value(2,0)
+  return {"name": name, "cost": cost, "energy": energy}
+
+def loadFoods():
+  ref=setMaps["name"].partition(':')
+  foods=[*range(functions.get_row_idx(ref[0]), functions.get_row_idx(ref[2]) + 1)]
+  return json.dumps(foods)
+
+def loadCosts():
+  costs, maxValue = functions.read_set("Diet.xlsx", "data", setMaps["cost"])
+  return costs
+
+def main():
+  global setMaps
+  setMaps = readSets("Diet.xlsx", "metadata")
+  print(setMaps)
+  elytica.init_model("diet_problem")
+  elytica.run_model("diet_problem")
+  return 0
