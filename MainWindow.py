@@ -3,7 +3,7 @@ from tkinter.ttk import Frame, Label, Entry
 from ApiConfig import *
 from DataEntry import * 
 from DataViewer import * 
-from Results import * 
+from ResultsViewer import * 
 
 class MainWindow(Frame):
   def __init__(self):
@@ -34,5 +34,5 @@ class MainWindow(Frame):
 
 
   def viewResults(self):
-    Results().show()
+    ResultsViewer().show()
     

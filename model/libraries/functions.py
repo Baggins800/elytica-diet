@@ -36,6 +36,43 @@ def read_set(fname, sname, ref):
   s = s + ']'
   return s, int(max_v)
 
+def read_matrix_RxC(fname, sname, ref):
+  iset = list()
+  wb = xlrd.open_workbook(fname)
+  ws = wb.sheet_by_name(sname)
+  start_ref = ref.partition(':')[0]
+  end_ref = ref.partition(':')[2]
+  start_col = get_col_idx(start_ref) - 1
+  start_row = get_row_idx(start_ref) - 1
+  end_row = get_row_idx(end_ref)
+  end_col = get_col_idx(end_ref)
+  result = []
+  for r in range(start_row, end_row):
+    row = []
+    for c in range(start_col, end_col):
+      row.append(ws.cell_value(r, c))
+    result.append(row)
+  return result
+
+def read_matrix_CxR(fname, sname, ref):
+  iset = list()
+  wb = xlrd.open_workbook(fname)
+  ws = wb.sheet_by_name(sname)
+  start_ref = ref.partition(':')[0]
+  end_ref = ref.partition(':')[2]
+  start_col = get_col_idx(start_ref) - 1
+  start_row = get_row_idx(start_ref) - 1
+  end_row = get_row_idx(end_ref)
+  end_col = get_col_idx(end_ref)
+  result = []
+
+  for c in range(start_col, end_col):
+    col = []
+    for r in range(start_row, end_row):
+      col.append(ws.cell_value(r, c))
+    result.append(col)
+  return result
+
 def read_1d_array(fname, sname, start_ref, dim_size):
   wb = xlrd.open_workbook(fname)
   ws = wb.sheet_by_name(sname)

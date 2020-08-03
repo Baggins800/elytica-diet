@@ -1,0 +1,84 @@
+import numpy
+import elytica
+import functions
+import xlrd
+
+model diet_problem
+set F = loadFoods();
+set N = {1,2,3,4,5,6,7,8,9,10};
+const c = loadCosts(), forall f in F;
+const a = loadNutrition(), forall n in N, forall f in F;
+const Nmax = loadUpperBounds(), forall n in N;
+const Nmin = loadLowerBounds(), forall n in N;
+var 0<=x<=100, forall f in F;
+minimize sum_{f in F}{x_{f} * c_{f}};
+constr sum_{f in F}{x_{f} * a_{n,f}} <= Nmax_{n}, forall n in N;
+constr sum_{f in F}{x_{f} * a_{n,f}} >= Nmin_{n}, forall n in N;
+end
+
+def readSets(filename, sheetname):
+  wb = xlrd.open_workbook(filename)
+  ws = wb.sheet_by_name(sheetname)
+  name = ws.cell_value(0,0)
+  cost = ws.cell_value(1,0)
+  energy = ws.cell_value(2,0)
+  protein = ws.cell_value(3,0)
+  sodium = ws.cell_value(4,0)
+  carbs = ws.cell_value(5,0)
+  satfats = ws.cell_value(6,0)
+  fibre = ws.cell_value(7,0)
+  vita = ws.cell_value(8,0)
+  vitc = ws.cell_value(9,0)
+  calcium = ws.cell_value(10,0)
+  iron = ws.cell_value(11,0)
+  nutrition = [protein, sodium, carbs, satfats, fibre, vita, vitc, calcium,  iron,  energy]
+  return {"name": name, "cost": cost, "nutrition": nutrition}
+
+def loadFoods():
+  ref=setMaps["name"].partition(':')
+  foods=[*range(functions.get_row_idx(ref[0]), functions.get_row_idx(ref[2]) + 1)]
+  return json.dumps(foods)
+
+def loadCosts():
+  costs = functions.read_matrix_CxR("Diet.xlsx", "data", setMaps["cost"])
+  return json.dumps(costs[0])
+
+def loadNutrition():
+  nutrition=[]
+  for n in setMaps["nutrition"]:
+    item = functions.read_matrix_CxR("Diet.xlsx", "data", n)
+    nutrition.append(item[0])
+  return json.dumps(nutrition)
+
+def loadUpperBounds():
+  bounds = functions.read_matrix_RxC("Diet.xlsx", "bounds", "B3:K3")[0]
+  return json.dumps(bounds)
+
+def loadLowerBounds():
+  bounds = functions.read_matrix_RxC("Diet.xlsx", "bounds", "B2:K2")[0]
+  return json.dumps(bounds)
+
+def getNameMapping():
+  nameMap = functions.read_matrix_CxR("Diet.xlsx", "data", setMaps["name"])[0]
+  results = {}
+  counter = 2
+  for name in nameMap:
+    results[counter] = name
+    counter += 1
+  return results
+
+def main():
+  global setMaps
+  setMaps = readSets("Diet.xlsx", "metadata")
+  elytica.init_model("diet_problem")
+  elytica.run_model("diet_problem")
+  elytica.save_model("diet_problem")
+  names = getNameMapping()
+  foods = {}
+  for i in json.loads(loadFoods()):    
+    vname = "x"+str(i)
+    val = elytica.get_variable_value("diet_problem", vname)
+    foods[names[i]] = val
+  elytica.write_results(json.dumps(foods))
+  return 0
+

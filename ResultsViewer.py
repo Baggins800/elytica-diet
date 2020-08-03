@@ -1,6 +1,6 @@
 from tkinter import *
 
-class Results:
+class ResultsViewer:
   def __init__(self):
     print("initiated DataEntry Form")
   def show(self):
