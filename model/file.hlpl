@@ -31,7 +31,7 @@ def readSets(filename, sheetname):
   vitc = ws.cell_value(9,0)
   calcium = ws.cell_value(10,0)
   iron = ws.cell_value(11,0)
-  nutrition = [protein, sodium, carbs, satfats, fibre, vita, vitc, calcium,  iron,  energy]
+  nutrition = [energy, protein, sodium, carbs, satfats, fibre, vita, vitc, calcium,  iron]
   return {"name": name, "cost": cost, "nutrition": nutrition}
 
 def loadFoods():
