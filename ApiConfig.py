@@ -6,7 +6,6 @@ class ApiConfig:
     self.__config = ConfigParser()
     self.__config.read('config.ini')
     self.__setupApiWindow.title("Personal Access Token")
-    self.__setupApiWindow.attributes('-type', 'dialog')
     self.__heading = Label(self.__setupApiWindow, text='Personal Access Token')
     self.__apiKeyText = Text(self.__setupApiWindow) 
     if 'elytica' in self.__config.sections():
@@ -15,9 +14,12 @@ class ApiConfig:
           self.__config['elytica']['apikey'])
     self.__installButton = Button(self.__setupApiWindow, text="Install",\
       command=self.saveConfiguration)
+    self.__quitButton = Button(self.__setupApiWindow, text="Close",\
+      command=self.__setupApiWindow.destroy)
     self.__heading.pack(fill=X) 
     self.__apiKeyText.pack(fill=BOTH) 
     self.__installButton.pack(fill=X)
+    self.__quitButton.pack(fill=X)
 
   def saveConfiguration(self):
     apiKey=self.__apiKeyText.get("1.0", END)
