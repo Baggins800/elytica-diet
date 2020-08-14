@@ -12,6 +12,9 @@ import threading
 from os import listdir
 from os.path import isfile, join
 
+class Sheets:
+  USER=1
+  FOOD=2
 class DataViewer(Frame):
   def __init__(self, parent=None, filename='Diet.xlsx', modelDir="model/"):
     self.parent = parent
@@ -50,6 +53,7 @@ class DataViewer(Frame):
     self.__foodButton.pack(fill=X, side=LEFT)
     self.__closeButton.pack(fill=X, side=LEFT)
     self.__foodButton['state'] = DISABLED
+    self.__selectedState = Sheets.FOOD
 
     return
 
@@ -121,6 +125,7 @@ class DataViewer(Frame):
   def foodData(self):
     self.__foodButton['state'] = DISABLED
     self.__userButton['state'] = NORMAL
+    self.__selectedState = Sheets.FOOD
     self.uf = self.table.model.df
     self.table.updateModel(TableModel(self.df))
     self.table.redraw()
@@ -128,6 +133,7 @@ class DataViewer(Frame):
   def userData(self):
     self.__foodButton['state'] = NORMAL
     self.__userButton['state'] = DISABLED
+    self.__selectedState = Sheets.USER
     self.df = self.table.model.df
     self.table.updateModel(TableModel(self.uf))
     self.table.redraw()
@@ -137,26 +143,24 @@ class DataViewer(Frame):
         yield chr(c)
 
   def saveData(self):
-    indices = len(self.table.model.df.index)
+    if self.__selectedState == Sheets.FOOD:
+      self.df = self.table.model.df
+
+    if self.__selectedState == Sheets.USER:
+      self.uf = self.table.model.df
+    indices = len(self.df.index)
     setData=[]
     for v in self.charRange('A', 'L'):
       setData.append(v + '2:' + v + str(indices + 1))
     modelSets=pd.DataFrame(setData)
-
-    if self.__foodButton['state'] == DISABLED:
-      self.df = self.table.model.df
-
-    if self.__userButton['state'] == DISABLED:
-      self.uf = self.table.model.df
-
-    writer = pd.ExcelWriter(self.__filename, engine = 'xlsxwriter')
+    writer = pd.ExcelWriter(self.__filename, engine='xlsxwriter')
     self.df.to_excel(writer, sheet_name='data', index=False)
     self.uf.to_excel(writer, sheet_name='bounds', index=False)
-    modelSets.to_excel(writer, sheet_name = 'metadata', index=False, header=False)
-    saved=writer.save()
+    modelSets.to_excel(writer, sheet_name='metadata', index=False, header=False)
+    saved = writer.save()
 
   def runModel(self):
-    firstRun=True
+    firstRun = True
     config = ConfigParser()
     config.read('config.ini')
     dss = edss.Service(config['elytica']['apiKey'])
@@ -172,7 +176,7 @@ class DataViewer(Frame):
       firstRun=False
     else:
       app = dss.selectApplicationByName("MIP Interpreter with Python")
-      dss.createProject("DIET", "The diet problem.", app) 
+      dss.createProject("DIET", "The diet problem.", app)
       dss.createJob("Basic Job", 100)
 
     self.__progress['value']=40
@@ -183,7 +187,7 @@ class DataViewer(Frame):
     modelFiles = [f for f in listdir(md) if isfile(join(md, f))]
     libraries = [f for f in listdir(libDir) if isfile(join(libDir, f))]
 
-    firstRun = True 
+    firstRun = True
     if firstRun:
       for f in modelFiles:
         modelFile = open(md + f,  "rb", buffering=0)
@@ -206,7 +210,7 @@ class DataViewer(Frame):
 
     self.__progress['value']=80
     self.update_idletasks()
-    
+
     dss.queueJob()
 
     self.__progress['value']=100
