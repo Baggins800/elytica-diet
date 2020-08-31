@@ -3,7 +3,7 @@ Make sure you use `python --version` >= 3.7
 ## Install Required Packages
 Install the required packages with `pip` by running:
 ```
- pip install tk configparser pandas pandastable elytica-dss xlsxwriter
+ pip3 install tk configparser pandas pandastable elytica-dss xlsxwriter
 ```
 ### Ubuntu module error
 Should you get the ``ModuleNotFoundError: No module named 'tkinter'`` in Ubuntu 18+, try installing the `python3-tk` distro library:
